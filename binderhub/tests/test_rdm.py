@@ -30,6 +30,13 @@ from .utils import async_requests
 async def test_rdm_redirect(app, old_url, new_url):
     r = await async_requests.get(app.url + old_url, allow_redirects=False)
     assert r.status_code == 302
+    if "/hub/login" in r.headers['location']:
+        r2 = await async_requests.post(r.headers['location'],
+            data={'username': 'dummy', 'password': 'dummy'},
+            allow_redirects=False
+        )
+        assert r2.status_code == 200, f"{r2.status_code} {r.headers['location']}"
+        r = r2
     assert r.headers['location'] == new_url
 
 @pytest.mark.parametrize(
@@ -43,4 +50,11 @@ async def test_rdm_redirect(app, old_url, new_url):
 async def test_weko3_redirect(app, old_url, new_url):
     r = await async_requests.get(app.url + old_url, allow_redirects=False)
     assert r.status_code == 302
+    if "/hub/login" in r.headers['location']:
+        r2 = await async_requests.post(r.headers['location'],
+            data={'username': 'dummy', 'password': 'dummy'},
+            allow_redirects=False
+        )
+        assert r2.status_code == 200, f"{r2.status_code} {r.headers['location']}"
+        r = r2
     assert r.headers['location'] == new_url
