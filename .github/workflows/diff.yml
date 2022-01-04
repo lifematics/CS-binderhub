@@ -33,7 +33,7 @@ jobs:
 
       - name: "Install latest released dev chart"
         run: |
-          UPGRADE_FROM_VERSION=$(curl -sS https://jupyterhub.github.io/helm-chart/info.json | jq -er '.binderhub.dev')
+          UPGRADE_FROM_VERSION=$(curl -sS https://rcosdp.github.io/CS-jhub-helm-chart/info.json | jq -er '.binderhub.dev')
 
           # NOTE: We change the directory so binderhub the chart name won't be
           #       misunderstood as the local folder name.
@@ -41,7 +41,7 @@ jobs:
 
           helm install binderhub-test binderhub \
               --values ./k8s-binder-k8s-hub/binderhub-chart-config.yaml \
-              --repo https://jupyterhub.github.io/helm-chart/ \
+              --repo https://rcosdp.github.io/CS-jhub-helm-chart/ \
               --version=$UPGRADE_FROM_VERSION
 
       - name: "Helm diff latest released dev chart with local chart"
