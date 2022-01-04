@@ -1,6 +1,8 @@
 #!/bin/sh
 # Use https://www.shellcheck.net/ to reduce mistakes if you make changes to this file.
 
+set -x
+
 setup_helm() {
     helm_version="${1}"
     echo "setup helm ${helm_version}"
