@@ -48,3 +48,11 @@ jupyterhub:
       type: none
     memory:
       guarantee: null
+
+  usersExporter:
+    secretToken: "dummy-user-exporter-secret-token"
+
+  schedulableNotebook:
+    secretToken: "dummy-schedulable-notebook-secret-token"
+    jenkins:
+      storageClassName: local-path
