@@ -1107,6 +1107,16 @@ class WEKO3Provider(RepoProvider):
 
     def get_optional_envs(self, access_token=None):
         hosts = deepcopy(self.hosts)
+        hosts_exists = False
+        for host in hosts:
+            if not any([self.repo.startswith(s) for s in host["hostname"]]):
+                continue
+            hosts_exists = True
+        if not hosts_exists:
+            ourl = urllib.parse.urlparse(self.repo)
+            hosts.append({
+                "hostname": [ourl.scheme + '://' + ourl.netloc],
+            })
         return {'WEKO3_HOSTS_JSON': json.dumps(hosts)}
 
     async def get_resolved_ref(self):
