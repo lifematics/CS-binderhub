@@ -1022,7 +1022,7 @@ class RDMProvider(RepoProvider):
             ref = None
         else:
             url, ref = self.spec.split('/', 1)
-        self.ref = str(uuid1()) if ref == 'master' or ref == '' or ref is None else ref
+        self.ref = str(uuid1()) if ref in {"", "HEAD", "master"} or ref == '' or ref is None else ref
         self.repo = urllib.parse.unquote(url)
         self.hostname = urllib.parse.urlparse(self.repo).netloc.split(':')[0]
 
@@ -1102,7 +1102,7 @@ class WEKO3Provider(RepoProvider):
             ref = None
         else:
             url, ref = self.spec.split('/', 1)
-        self.ref = str(uuid1()) if ref == 'master' or ref == '' or ref is None else ref
+        self.ref = str(uuid1()) if ref in {"", "HEAD", "master"} or ref is None else ref
         self.repo = urllib.parse.unquote(url)
 
     def get_optional_envs(self, access_token=None):
