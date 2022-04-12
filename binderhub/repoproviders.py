@@ -1022,7 +1022,7 @@ class RDMProvider(RepoProvider):
             ref = None
         else:
             url, ref = self.spec.split('/', 1)
-        self.ref = str(uuid1()) if ref == 'master' or ref == '' or ref is None else ref
+        self.ref = str(uuid1()) if ref in {"", "HEAD", "master"} or ref == '' or ref is None else ref
         self.repo = urllib.parse.unquote(url)
         self.hostname = urllib.parse.urlparse(self.repo).netloc.split(':')[0]
 
@@ -1102,28 +1102,22 @@ class WEKO3Provider(RepoProvider):
             ref = None
         else:
             url, ref = self.spec.split('/', 1)
-        self.ref = str(uuid1()) if ref == 'master' or ref == '' or ref is None else ref
+        self.ref = str(uuid1()) if ref in {"", "HEAD", "master"} or ref is None else ref
         self.repo = urllib.parse.unquote(url)
-        self.hostname = urllib.parse.urlparse(self.repo).netloc.split(':')[0]
 
     def get_optional_envs(self, access_token=None):
         hosts = deepcopy(self.hosts)
+        hosts_exists = False
         for host in hosts:
-            if any([urllib.parse.urlparse(h).netloc.split(':')[0] == self.hostname
-                    for h in host['hostname']]):
-                host['token'] = access_token
+            if not any([self.repo.startswith(s) for s in host["hostname"]]):
+                continue
+            hosts_exists = True
+        if not hosts_exists:
+            ourl = urllib.parse.urlparse(self.repo)
+            hosts.append({
+                "hostname": [ourl.scheme + '://' + ourl.netloc],
+            })
         return {'WEKO3_HOSTS_JSON': json.dumps(hosts)}
-
-    def get_authorization_provider(self):
-        return self.hostname
-
-    def get_authorization_url(self, state, hub_url):
-        client = OAuth2Client(self._find_host(self.hostname))
-        return client.get_authorization_url(state, hub_url)
-
-    def fetch_authorized_token(self, authorization_response, hub_url):
-        client = OAuth2Client(self._find_host(self.hostname))
-        return client.fetch_token(authorization_response, hub_url)
 
     async def get_resolved_ref(self):
         return self.ref
@@ -1139,12 +1133,3 @@ class WEKO3Provider(RepoProvider):
 
     def get_build_slug(self):
         return re.sub(r'[^\-\.A-Za-z0-9]', '-', self.repo)
-
-    def _find_host(self, target_host):
-        for host in self.hosts:
-            if any([urllib.parse.urlparse(h).netloc.split(':')[0] == target_host
-                    for h in host['hostname']]):
-                r = host.copy()
-                r['scope'] = ['deposit:actions', 'deposit:write', 'user:email']
-                return r
-        raise ValueError('Host not found: {}'.format(target_host))

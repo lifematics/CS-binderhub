@@ -304,7 +304,7 @@ Install BinderHub
 
 First, get the latest helm chart for BinderHub.::
 
-    helm repo add jupyterhub https://jupyterhub.github.io/helm-chart
+    helm repo add jupyterhub https://rcosdp.github.io/CS-jhub-helm-chart
     helm repo update
 
 Next, **install the Helm Chart** using the configuration files
