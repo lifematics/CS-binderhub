@@ -248,6 +248,9 @@ class BuildHandler(BaseHandler):
 
         auth_token = None
         auth_provider_id = provider.get_authorization_provider()
+        caller_userctx = self.get_argument('userctx', None)
+        if caller_userctx is not None:
+            auth_provider_id += '-' + caller_userctx
         if auth_provider_id is not None and self.settings['auth_enabled']:
             # Need authorization
             user = self.get_current_user()
