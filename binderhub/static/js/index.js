@@ -163,8 +163,15 @@ function build(providerSpec, log, path, pathType) {
 
   var image = new BinderImage(providerSpec);
 
-  image.onStateChange('*', function(oldState, newState, data) {
+  image.onStateChange('*', function (oldState, newState, data) {
     if (data.message !== undefined) {
+      // 日本語の文字列間がデフォルト＝[charMeasure.width * 2]だと広すぎるため、1.1へ変更
+      log.updateCharSizeStyles = function () {
+        this.charSizeStyleElement.textContent =
+          ".xterm-wide-char{width:" + this.charMeasure.width * 1.1 + "px;}" +
+          (".xterm-normal-char{width:" + this.charMeasure.width + "px;}") +
+          (".xterm-rows > div{height:" + this.charMeasure.height + "px;}");
+      };
       log.write(data.message);
       log.fit();
     } else {

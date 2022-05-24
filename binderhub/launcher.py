@@ -105,12 +105,14 @@ class Launcher(LoggingConfigurable):
                     self.log.error("Error accessing Hub API (using %s): %s", request_url, e)
                     if i == self.retries:
                         # last api request failed, raise the exception
-                        raise
+                        raise RuntimeError("Jupyterhubへ接続できません。時間を空けて再ビルドしてください。"
+                                           + "再ビルドに失敗した場合、管理者へお問い合わせください。")
                     await gen.sleep(retry_delay)
                     # exponential backoff for consecutive failures
                     retry_delay *= 2
                 else:
-                    raise
+                    raise RuntimeError("Jupyterhubへ接続できません。時間を空けて再ビルドしてください。"
+                                       + "再ビルドに失敗した場合、管理者へお問い合わせください。")
 
     async def get_user_data(self, username):
         resp = await self.api_request(
@@ -190,7 +192,9 @@ class Launcher(LoggingConfigurable):
                 raise web.HTTPError(
                     409,
                     "User {} already has the maximum of {} named servers."
-                    "  One must be deleted before a new server can be created".format(
+                    "  One must be deleted before a new server can be created"
+                    "\n サーバー数の上限を超えています。以下のリンクからサーバーを削除し、ビルドしてください。"
+                    "\n https://jupyter.cs.rcos.nii.ac.jp/hub/home".format(
                         username, self.named_server_limit_per_user
                     ),
                 )
@@ -232,7 +236,8 @@ class Launcher(LoggingConfigurable):
                     # and tune this appropriately
                     await gen.sleep(min(1.4 ** i, 10))
                 else:
-                    raise web.HTTPError(500, "Image %s for user %s took too long to launch" % (image, username))
+                    raise web.HTTPError(500, "Image %s for user %s took too long to launch"
+                    "\nビルド時にタイムアウトが発生しました。お問い合わせください。".format(image, username))
 
         except HTTPError as e:
             if e.response:
