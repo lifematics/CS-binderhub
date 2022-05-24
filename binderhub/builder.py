@@ -309,7 +309,7 @@ class BuildHandler(BaseHandler):
 
             else:
                 error_message.append("Is your repo public?")
-                error_message.append("publicリポジトリじゃない？")
+                error_message.append("リポジトリが公開されていない可能性があります。")
 
             await self.fail("\n".join(error_message))
             return
@@ -548,7 +548,7 @@ class BuildHandler(BaseHandler):
             app_log.error("%s has exceeded quota: %s/%s (%s total)",
                           self.repo_url, matching_pods, quota, total_pods)
             await self.fail(f"Too many users running {self.repo_url}! Try again soon.\n"
-                            + "実行ユーザーが集中しています。管理者へお問い合わせください。")
+                            + f"{self.repo_url}の実行が集中しています。しばらく待っても改善しない場合は、管理者へお問い合わせください。")
             return
 
         if quota and matching_pods >= 0.5 * quota:

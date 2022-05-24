@@ -193,7 +193,7 @@ class Launcher(LoggingConfigurable):
                     409,
                     "User {} already has the maximum of {} named servers."
                     "  One must be deleted before a new server can be created"
-                    "\n サーバー数の上限を超えています。以下のリンクからサーバーを削除し、ビルドしてください。"
+                    "\n 起動中のサーバー数が上限を超えています。以下のリンクからサーバーを削除し、ビルドしてください。"
                     "\n https://jupyter.cs.rcos.nii.ac.jp/hub/home".format(
                         username, self.named_server_limit_per_user
                     ),
