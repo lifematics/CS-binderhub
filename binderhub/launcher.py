@@ -87,6 +87,11 @@ class Launcher(LoggingConfigurable):
         headers.update({'Authorization': 'token %s' % self.hub_api_token})
         hub_api_url = os.getenv('JUPYTERHUB_API_URL', '') or self.hub_url_local + 'hub/api/'
         request_url = hub_api_url + url
+
+        tmp_timeout = os.getenv("LAUNCHER_REQUEST_TIMEOUT")
+        if tmp_timeout:
+            kwargs['request_timeout'] = int(tmp_timeout)
+
         req = HTTPRequest(request_url, *args, **kwargs)
         retry_delay = self.retry_delay
         for i in range(1, self.retries + 1):
