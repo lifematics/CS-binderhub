@@ -117,7 +117,8 @@ class Launcher(LoggingConfigurable):
                     retry_delay *= 2
                 else:
                     raise RuntimeError("Jupyterhubへ接続できません。時間を空けて再ビルドしてください。"
-                                       + "再ビルドに失敗した場合、管理者へお問い合わせください。")
+                                       + "再ビルドに失敗した場合、管理者へお問い合わせください。"
+                                       + f"\n[{str(e)}]")
 
     async def get_user_data(self, username):
         resp = await self.api_request(
