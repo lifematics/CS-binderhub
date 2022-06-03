@@ -2,8 +2,10 @@ from unittest import TestCase
 from urllib.parse import quote
 
 import pytest
+from unittest import mock
 import re
 from tornado.ioloop import IOLoop
+from tornado.httpclient import HTTPError
 
 from binderhub.repoproviders import (
     DataverseProvider,
@@ -19,6 +21,7 @@ from binderhub.repoproviders import (
     strip_suffix,
     tokenize_spec,
 )
+from binderhub.tests.conftest import mock_asynchttpclient
 
 sha1_validate = GitRepoProvider.sha1_validate
 
@@ -176,34 +179,64 @@ async def test_dataverse(spec, resolved_spec, resolved_ref, resolved_ref_url, bu
     assert spec == resolved_spec
 
 
-@pytest.mark.parametrize('spec,resolved_ref,repo_url,build_slug', [
-    ['https%3A%2F%2Fsome.host.test.jp%2Fpwad2/',
-     None,
-     'https://some.host.test.jp/pwad2',
-     'https---some.host.test.jp-pwad2'],
-    ['https%3A%2F%2Fsome.host.test.jp%2Fpwad2',
-     None,
-     'https://some.host.test.jp/pwad2',
-     'https---some.host.test.jp-pwad2'],
-    ['https%3A%2F%2Fsome.host.test.jp%2Fpwad2%2Ffiles%2Ftestprovider%2Ftestdir/',
-     None,
-     'https://some.host.test.jp/pwad2/files/testprovider/testdir',
-     'https---some.host.test.jp-pwad2-files-testprovider-testdir'],
-    ['https%3A%2F%2Fsome.host.test.jp%2Fpwad2%2Ffiles%2Ftestprovider%2Ftestdir/master',
-     None,
-     'https://some.host.test.jp/pwad2/files/testprovider/testdir',
-     'https---some.host.test.jp-pwad2-files-testprovider-testdir'],
-    ['https%3A%2F%2Fsome.host.test.jp%2Fpwad2%2Ffiles%2Ftestprovider%2Ftestdir/HEAD',
-     None,
-     'https://some.host.test.jp/pwad2/files/testprovider/testdir',
-     'https---some.host.test.jp-pwad2-files-testprovider-testdir'],
-    ['https%3A%2F%2Fsome.host.test.jp%2Fpwad2%2Ffiles%2Ftestprovider%2Ftestdir/X1234',
-     'X1234',
-     'https://some.host.test.jp/pwad2/files/testprovider/testdir',
-     'https---some.host.test.jp-pwad2-files-testprovider-testdir'],
-])
-async def test_rdm(spec, resolved_ref, repo_url, build_slug):
+@pytest.mark.parametrize(
+    'spec,resolved_ref,repo_url,build_slug,api_status_code,validation_result,token_validation_url',
+    [
+        ['https%3A%2F%2Fsome.host.test.jp%2Fpwad2/',
+        None,
+        'https://some.host.test.jp/pwad2',
+        'https---some.host.test.jp-pwad2',
+        None,
+        True,
+        'https://api.some.host.test.jp/v2/nodes/pwad2/'],
+        ['https%3A%2F%2Fsome.host.test.jp%2Fpwad2',
+        None,
+        'https://some.host.test.jp/pwad2',
+        'https---some.host.test.jp-pwad2',
+        404,
+        None,
+        'https://api.some.host.test.jp/v2/nodes/pwad2/'],
+        ['https%3A%2F%2Fsome.host.test.jp%2Fpwad2%2Ffiles%2Ftestprovider%2Ftestdir/',
+        None,
+        'https://some.host.test.jp/pwad2/files/testprovider/testdir',
+        'https---some.host.test.jp-pwad2-files-testprovider-testdir',
+        None,
+        True,
+        'https://api.some.host.test.jp/v2/nodes/pwad2/'],
+        ['https%3A%2F%2Fsome.host.test.jp%2Fpwad2%2Ffiles%2Ftestprovider%2Ftestdir/master',
+        None,
+        'https://some.host.test.jp/pwad2/files/testprovider/testdir',
+        'https---some.host.test.jp-pwad2-files-testprovider-testdir',
+        500,
+        None,
+        'https://api.some.host.test.jp/v2/nodes/pwad2/'],
+        ['https%3A%2F%2Fsome.host.test.jp%2Fpwad2%2Ffiles%2Ftestprovider%2Ftestdir/HEAD',
+        None,
+        'https://some.host.test.jp/pwad2/files/testprovider/testdir',
+        'https---some.host.test.jp-pwad2-files-testprovider-testdir',
+        401,
+        False,
+        'https://api.some.host.test.jp/v2/nodes/pwad2/'],
+        ['https%3A%2F%2Fsome.host.test.jp%2Fpwad2%2Ffiles%2Ftestprovider%2Ftestdir/X1234',
+        'X1234',
+        'https://some.host.test.jp/pwad2/files/testprovider/testdir',
+        'https---some.host.test.jp-pwad2-files-testprovider-testdir',
+        403,
+        False,
+        'https://api.some.host.test.jp/v2/nodes/pwad2/'],
+    ]
+)
+async def test_rdm(
+    spec, resolved_ref, repo_url, build_slug, api_status_code, validation_result,
+    token_validation_url
+):
     provider = RDMProvider(spec=spec)
+    provider.hosts = [
+        {
+            'hostname': ['https://some.host.test.jp/'],
+            'api': 'https://api.some.host.test.jp/v2/',
+        }
+    ]
 
     # have to resolve the ref first
     ref = await provider.get_resolved_ref()
@@ -219,6 +252,23 @@ async def test_rdm(spec, resolved_ref, repo_url, build_slug):
     assert ref_url == repo_url
     resolved_spec = await provider.get_resolved_spec()
     assert spec == resolved_spec
+
+    mock_async_http_client = mock.AsyncMock()
+    with mock.patch.object(provider, '_http_client', return_value=mock_async_http_client):
+        await provider.validate_authorized_token('SAMPLE_ACCESS_KEY')
+        mock_async_http_client.fetch.assert_called_once()
+        request_args, _ = mock_async_http_client.fetch.call_args_list[0]
+        assert request_args[0].url == token_validation_url
+
+    with mock.patch.object(provider, '_http_client', return_value=mock.AsyncMock()) as mock_http_client:
+        if api_status_code is not None:
+            mock_http_client.side_effect = HTTPError(code=api_status_code)
+        if validation_result is None:
+            with pytest.raises(HTTPError):
+                await provider.validate_authorized_token('SAMPLE_ACCESS_KEY')
+        else:
+            r = await provider.validate_authorized_token('SAMPLE_ACCESS_KEY')
+            assert r == validation_result
 
 
 @pytest.mark.parametrize('spec,resolved_ref,repo_url,build_slug', [
