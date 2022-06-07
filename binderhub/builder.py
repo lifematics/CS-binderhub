@@ -638,8 +638,9 @@ class BuildHandler(BaseHandler):
                 await self.emit(
                     {
                         "phase": "launching",
-                        "message": "Launch attempt {} failed, retrying...\n".format(
-                            i + 1
+                        "message": "Launch attempt {} failed, retrying...\n" +
+                                   "起動に{}回失敗しました。リトライしています...".format(
+                            i + 1, i + 1
                         ),
                     }
                 )
