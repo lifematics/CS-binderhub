@@ -638,10 +638,8 @@ class BuildHandler(BaseHandler):
                 await self.emit(
                     {
                         "phase": "launching",
-                        "message": "Launch attempt {} failed, retrying...\n" +
-                                   "起動に{}回失敗しました。リトライしています...".format(
-                            i + 1, i + 1
-                        ),
+                        "message": f"Launch attempt {i+1} failed, retrying...\n" +
+                                   f"起動に{i+1}回失敗しました。リトライしています...\n"
                     }
                 )
                 await gen.sleep(retry_delay)

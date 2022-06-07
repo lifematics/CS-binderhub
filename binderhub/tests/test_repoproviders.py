@@ -446,7 +446,7 @@ class TestSpecErrorHandling(TestCase):
 
     def test_spec_with_no_suggestion(self):
         spec = "short/master"
-        error = "^((?!Did you mean).)*$".format(spec)  # negative match
+        error = "^((?!Did you mean).|\s)*$".format(spec)  # negative match
         with self.assertRaisesRegex(ValueError, error):
             user, repo, unresolved_ref = tokenize_spec(spec)
 

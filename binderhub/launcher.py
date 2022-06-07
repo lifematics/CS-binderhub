@@ -87,6 +87,11 @@ class Launcher(LoggingConfigurable):
         headers.update({'Authorization': 'token %s' % self.hub_api_token})
         hub_api_url = os.getenv('JUPYTERHUB_API_URL', '') or self.hub_url_local + 'hub/api/'
         request_url = hub_api_url + url
+
+        tmp_timeout = os.getenv("LAUNCHER_REQUEST_TIMEOUT")
+        if tmp_timeout:
+            kwargs['request_timeout'] = int(tmp_timeout)
+
         req = HTTPRequest(request_url, *args, **kwargs)
         retry_delay = self.retry_delay
         for i in range(1, self.retries + 1):
@@ -112,7 +117,8 @@ class Launcher(LoggingConfigurable):
                     retry_delay *= 2
                 else:
                     raise RuntimeError("Jupyterhubへ接続できません。時間を空けて再ビルドしてください。"
-                                       + "再ビルドに失敗した場合、管理者へお問い合わせください。")
+                                       + "再ビルドに失敗した場合、管理者へお問い合わせください。"
+                                       + f"\n[{str(e)}]")
 
     async def get_user_data(self, username):
         resp = await self.api_request(
@@ -192,8 +198,8 @@ class Launcher(LoggingConfigurable):
                 raise web.HTTPError(
                     409,
                     "User {} already has the maximum of {} named servers."
-                    "  One must be deleted before a new server can be created"
-                    "\n 起動中のサーバー数が上限を超えています。以下のリンクから不要なサーバーを削除してから、ビルドを再試行してください。"
+                    "  One must be deleted before a new server can be created."
+                    "\n 起動中のサーバー数が上限を超えています。以下のリンクから不要なサーバーを削除した後、ビルドを再試行してください。"
                     "\n https://jupyter.cs.rcos.nii.ac.jp/hub/home".format(
                         username, self.named_server_limit_per_user
                     ),
