@@ -133,6 +133,12 @@ class RepoProvider(LoggingConfigurable):
         """
         return None
 
+    async def validate_authorized_token(self, access_token):
+        """
+        Validate a token acquired
+        """
+        return True
+
     def is_banned(self):
         """
         Return true if the given spec has been banned
@@ -1045,6 +1051,20 @@ class RDMProvider(RepoProvider):
         client = OAuth2Client(self._find_host(self.hostname))
         return client.fetch_token(authorization_response, hub_url)
 
+    async def validate_authorized_token(self, access_token):
+        host = self._find_host(self.hostname)
+        project_id = self._project_id()
+        url = urllib.parse.urljoin(host['api'], 'nodes/{}/'.format(project_id))
+        req = HTTPRequest(url,
+                          headers={'Authorization': 'Bearer {}'.format(access_token)})
+        try:
+            await self._http_client().fetch(req)
+        except HTTPError as e:
+            if e.code in [401, 403]:
+                return False
+            raise
+        return True
+
     async def get_resolved_ref(self):
         return self.ref
 
@@ -1068,6 +1088,17 @@ class RDMProvider(RepoProvider):
                 r['scope'] = ['osf.full_read']
                 return r
         raise ValueError('Host not found: {}'.format(target_host))
+
+    def _http_client(self):
+        return AsyncHTTPClient()
+
+    def _project_id(self):
+        u = urllib.parse.urlparse(self.repo)
+        path = u.path[1:] if u.path.startswith("/") else u.path
+        if "/" in path:
+            project_id, _ = path.split("/", 1)
+            return project_id
+        return path
 
 
 class WEKO3Provider(RepoProvider):
