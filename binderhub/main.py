@@ -58,9 +58,11 @@ class ParameterizedMainHandler(BaseHandler):
                 "Failed to construct provider for %s/%s",
                 provider_prefix, spec,
             )
+            error_msg = str(e)
+            error_msg += f'\n{provider_prefix}:{spec}の取得に失敗しました。管理者へお問い合わせください。'
             # FIXME: 400 assumes it's the user's fault (?)
             # maybe we should catch a special InvalidSpecError here
-            raise HTTPError(400, str(e))
+            raise HTTPError(400, error_msg)
 
         provider_spec = f'{provider_prefix}/{spec}'
         social_desc = f"{SPEC_NAMES[provider_prefix]}: {spec}"

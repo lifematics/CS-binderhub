@@ -242,7 +242,8 @@ class BuildHandler(BaseHandler):
         if provider.is_banned():
             await self.emit({
                 'phase': 'failed',
-                'message': 'Sorry, {} has been temporarily disabled from launching. Please contact admins for more info!'.format(spec)
+                'message': f'Sorry, {spec} has been temporarily disabled from launching. Please contact admins for more info!'
+                + f'\n{spec}が一時的に起動できなくなりました。管理者へお問い合わせください。'
             })
             return
 
@@ -287,24 +288,30 @@ class BuildHandler(BaseHandler):
         try:
             ref = await provider.get_resolved_ref()
         except Exception as e:
-            await self.fail("Error resolving ref for %s: %s" % (key, e))
+            await self.fail("Error resolving ref for %s: %s"
+                            "\nリポジトリURLを確認してください。" % (key, e))
             return
 
         if ref is None:
             error_message = ["Could not resolve ref for %s. Double check your URL." % key]
+            error_message.append('リポジトリURLを確認してください。')
 
             if provider.name == "GitHub":
                 error_message.append('GitHub recently changed default branches from "master" to "main".')
+                error_message.append('GitHub は2020年に、デフォルトブランチ名を"master"から"main"へ変更しました。')
 
                 if provider.unresolved_ref == "master":
                     error_message.append('Did you mean the "main" branch?')
+                    error_message.append('もしかして: "main" ブランチ？')
                 elif provider.unresolved_ref == "main":
                     error_message.append('Did you mean the "master" branch?')
+                    error_message.append('もしかして: "master" ブランチ？')
 
             else:
                 error_message.append("Is your repo public?")
+                error_message.append("リポジトリが公開されていない可能性があります。")
 
-            await self.fail(" ".join(error_message))
+            await self.fail("\n".join(error_message))
             return
 
         self.ref_url = await provider.get_resolved_ref_url()
@@ -539,8 +546,9 @@ class BuildHandler(BaseHandler):
         quota = repo_config.get('quota')
         if quota and matching_pods >= quota:
             app_log.error("%s has exceeded quota: %s/%s (%s total)",
-                self.repo_url, matching_pods, quota, total_pods)
-            await self.fail("Too many users running %s! Try again soon." % self.repo_url)
+                          self.repo_url, matching_pods, quota, total_pods)
+            await self.fail(f"Too many users running {self.repo_url}! Try again soon.\n"
+                            + f"{self.repo_url}の実行が集中しています。しばらく待っても改善しない場合は、管理者へお問い合わせください。")
             return
 
         if quota and matching_pods >= 0.5 * quota:
@@ -611,6 +619,12 @@ class BuildHandler(BaseHandler):
 
                 if i + 1 == launcher.retries:
                     # last attempt failed, let it raise
+                    await self.emit(
+                        {
+                            "phase": "failed",
+                            "message": str(e)
+                        }
+                    )
                     raise
 
                 # not the last attempt, try again
@@ -624,9 +638,8 @@ class BuildHandler(BaseHandler):
                 await self.emit(
                     {
                         "phase": "launching",
-                        "message": "Launch attempt {} failed, retrying...\n".format(
-                            i + 1
-                        ),
+                        "message": f"Launch attempt {i+1} failed, retrying...\n" +
+                                   f"起動に{i+1}回失敗しました。リトライしています...\n"
                     }
                 )
                 await gen.sleep(retry_delay)
