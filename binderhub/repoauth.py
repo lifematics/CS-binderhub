@@ -37,7 +37,7 @@ class TokenStore(object):
         c = self.connect.cursor()
         c.execute("""SELECT access_token, expires FROM repo_session
             WHERE user=? AND provider_name=? AND provider_id=? AND access_token IS NOT NULL
-            ORDER BY expires DESC LIMIT 1;""",
+            ORDER BY acquired DESC LIMIT 1;""",
                   (user['name'], provider_name, provider_id))
         result = c.fetchone()
         c.close()
