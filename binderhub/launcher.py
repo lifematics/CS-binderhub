@@ -110,13 +110,13 @@ class Launcher(LoggingConfigurable):
                     self.log.error("Error accessing Hub API (using %s): %s", request_url, e)
                     if i == self.retries:
                         # last api request failed, raise the exception
-                        raise RuntimeError("Jupyterhubへ接続できません。時間を空けて再ビルドしてください。"
+                        raise RuntimeError("JupyterHubへ接続できません。時間を空けて再ビルドしてください。"
                                            + "再ビルドに失敗した場合、管理者へお問い合わせください。")
                     await gen.sleep(retry_delay)
                     # exponential backoff for consecutive failures
                     retry_delay *= 2
                 else:
-                    raise RuntimeError("Jupyterhubへ接続できません。時間を空けて再ビルドしてください。"
+                    raise RuntimeError("JupyterHubへ接続できません。時間を空けて再ビルドしてください。"
                                        + "再ビルドに失敗した場合、管理者へお問い合わせください。"
                                        + f"\n[{str(e)}]")
 

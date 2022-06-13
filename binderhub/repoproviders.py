@@ -42,7 +42,7 @@ def tokenize_spec(spec):
         msg += '\nリポジトリURLを確認してください。\n'
         if len(spec_parts) == 2 and spec_parts[-1] != 'master':
             msg += 'Did you mean "{spec}/master"?'.format(spec=spec)
-            msg += '\nもしかして: "{spec}/master" ？\n'.format(spec=spec)
+            msg += '\n"{spec}/master" ブランチではありませんか？\n'.format(spec=spec)
         raise ValueError(msg)
 
     return spec_parts
@@ -809,7 +809,6 @@ class GitHubRepoProvider(RepoProvider):
 
                 raise ValueError(f"GitHub rate limit exceeded. Try again in {minutes_until_reset} minutes."
                                  + f"\nGitHubへアクセスが集中しています。{minutes_until_reset}分後に再ビルドしてください。"
-                                 + "再ビルドに失敗した場合、管理者へお問い合わせください。"
                                  )
             # Status 422 is returned by the API when we try and resolve a non
             # existent reference
