@@ -300,14 +300,14 @@ class BuildHandler(BaseHandler):
 
             if provider.name == "GitHub":
                 error_message.append('GitHub recently changed default branches from "master" to "main".')
-                error_message.append('GitHub は2020年に、デフォルトブランチ名を"master"から"main"へ変更しました。')
+                error_message.append('GitHub は2020年に、デフォルトブランチ名を "master" から "main" へ変更しました。')
 
                 if provider.unresolved_ref == "master":
                     error_message.append('Did you mean the "main" branch?')
-                    error_message.append('もしかして: "main" ブランチ？')
+                    error_message.append('"main" ブランチではありませんか？')
                 elif provider.unresolved_ref == "main":
                     error_message.append('Did you mean the "master" branch?')
-                    error_message.append('もしかして: "master" ブランチ？')
+                    error_message.append('"master" ブランチではありませんか？')
 
             else:
                 error_message.append("Is your repo public?")
