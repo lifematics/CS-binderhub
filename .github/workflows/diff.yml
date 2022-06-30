@@ -31,6 +31,13 @@ jobs:
           helm plugin install https://github.com/databus23/helm-diff
           helm dependency update ./helm-chart/binderhub
 
+
+      # Install CRD for Argo Rollouts
+      - name: Install Argo Aollouts
+        run: |
+          kubectl create namespace argo-rollouts
+          kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+
       - name: "Install latest released dev chart"
         run: |
           UPGRADE_FROM_VERSION=$(curl -sS https://rcosdp.github.io/CS-jhub-helm-chart/info.json | jq -er '.binderhub.dev')
