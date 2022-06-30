@@ -157,7 +157,7 @@ jobs:
         uses: jupyterhub/action-k8s-namespace-report@v1
         if: always()
         with:
-          important-workloads: deploy/binder deploy/hub deploy/proxy
+          important-workloads: deploy/proxy
 
       # GitHub action reference: https://github.com/codecov/codecov-action
       - name: Upload coverage stats
