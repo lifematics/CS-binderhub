@@ -57,9 +57,3 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 8585
-      {{- with .Values.service.nodePort }}
-      nodePort: {{ . }}
-      {{- end }}
-      {{ if .Values.service.portName -}}
-      name: {{ .Values.service.portName }}
-      {{- end }}
