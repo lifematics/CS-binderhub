@@ -39,8 +39,10 @@ def tokenize_spec(spec):
     spec_parts = spec.split('/', 2)  # allow ref to contain "/"
     if len(spec_parts) != 3:
         msg = 'Spec is not of the form "user/repo/ref", provided: "{spec}".'.format(spec=spec)
+        msg += '\nリポジトリURLを確認してください。\n'
         if len(spec_parts) == 2 and spec_parts[-1] != 'master':
-            msg += ' Did you mean "{spec}/master"?'.format(spec=spec)
+            msg += 'Did you mean "{spec}/master"?'.format(spec=spec)
+            msg += '\n"{spec}/master" ブランチではありませんか？\n'.format(spec=spec)
         raise ValueError(msg)
 
     return spec_parts
@@ -811,9 +813,9 @@ class GitHubRepoProvider(RepoProvider):
                 # round expiry up to nearest 5 minutes
                 minutes_until_reset = 5 * (1 + (reset_seconds // 60 // 5))
 
-                raise ValueError("GitHub rate limit exceeded. Try again in %i minutes."
-                    % minutes_until_reset
-                )
+                raise ValueError(f"GitHub rate limit exceeded. Try again in {minutes_until_reset} minutes."
+                                 + f"\nGitHubへアクセスが集中しています。{minutes_until_reset}分後に再ビルドしてください。"
+                                 )
             # Status 422 is returned by the API when we try and resolve a non
             # existent reference
             elif e.code in (404, 422):
