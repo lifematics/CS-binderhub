@@ -68,7 +68,7 @@ metadata:
   {{- end }}
 spec:
   rules:
-    {{- range .Values.ingress.hosts }}
+    {{- range .Values.ingress.preview.hosts }}
     - host: {{ . }}
       http:
         paths:
@@ -81,12 +81,12 @@ spec:
   tls:
     - secretName: kubelego-tls-binder-{{ .Release.Name }}
       hosts:
-        {{- range .Values.ingress.hosts }}
+        {{- range .Values.ingress.preview.hosts }}
         - {{ . | quote }}
         {{- end }}
-  {{- else if .Values.ingress.tls }}
+  {{- else if .Values.ingress.preview.tls }}
   tls:
-    {{- range .Values.ingress.tls }}
+    {{- range .Values.ingress.preview.tls }}
     - hosts:
         {{- range .hosts }}
         - {{ . | quote }}
