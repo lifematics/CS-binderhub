@@ -165,10 +165,10 @@ function build(providerSpec, log, path, pathType) {
 
   image.onStateChange('*', function (oldState, newState, data) {
     if (data.message !== undefined) {
-      // 日本語の文字列間がデフォルト＝[charMeasure.width * 2]だと広すぎるため、1.1へ変更
+      // 日本語の文字同士の幅を自然にする
       log.updateCharSizeStyles = function () {
         this.charSizeStyleElement.textContent =
-          ".xterm-wide-char{width:" + this.charMeasure.width * 1.1 + "px;}" +
+          ".xterm-wide-char{width: auto;}" +
           (".xterm-normal-char{width:" + this.charMeasure.width + "px;}") +
           (".xterm-rows > div{height:" + this.charMeasure.height + "px;}");
       };
