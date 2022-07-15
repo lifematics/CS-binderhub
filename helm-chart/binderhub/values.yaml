@@ -210,6 +210,10 @@ ingress:
     # - secretName: chart-example-tls
     #   hosts:
     #     - chart-example.local
+  preview:
+    hosts:
+      - chart-example-preview.local
+    tls: []
 
 initContainers: []
 extraVolumes: []

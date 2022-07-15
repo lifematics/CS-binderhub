@@ -64,6 +64,12 @@ jobs:
         with:
           python-version: '3.8'
 
+      # Install CRD for Argo Rollouts
+      - name: Install Argo Aollouts
+        run: |
+          kubectl create namespace argo-rollouts
+          kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+
       - name: Setup Python package dependencies
         run: |
             # Install development requirements, package requirements, and frozen image
@@ -151,7 +157,7 @@ jobs:
         uses: jupyterhub/action-k8s-namespace-report@v1
         if: always()
         with:
-          important-workloads: deploy/binder deploy/hub deploy/proxy
+          important-workloads: deploy/proxy
 
       # GitHub action reference: https://github.com/codecov/codecov-action
       - name: Upload coverage stats
