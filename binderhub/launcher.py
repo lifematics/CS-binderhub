@@ -122,7 +122,7 @@ class Launcher(LoggingConfigurable):
 
     async def get_user_data(self, username):
         resp = await self.api_request(
-            'users?include_stopped_servers&name_filter=%s' % username,
+            'users/%s?include_stopped_servers' % username,
             method='GET',
         )
         body = json.loads(resp.body.decode('utf-8'))
