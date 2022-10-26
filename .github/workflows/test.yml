@@ -19,13 +19,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-            - k3s-channel: v1.19
+            - k3s-version: v1.19.1+k3s1
               helm-version: v3.5.0
               test: main
-            - k3s-channel: v1.19
+            - k3s-version: v1.19.1+k3s1
               helm-version: v3.5.0
               test: auth
-            - k3s-channel: v1.19
+            - k3s-version: v1.19.1+k3s1
               helm-version: v3.5.0
               test: helm
     steps:
@@ -69,6 +69,10 @@ jobs:
         run: |
           kubectl create namespace argo-rollouts
           kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+          curl -LO https://github.com/argoproj/argo-rollouts/releases/latest/download/kubectl-argo-rollouts-linux-amd64
+          chmod +x ./kubectl-argo-rollouts-linux-amd64
+          mv ./kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
+
 
       - name: Setup Python package dependencies
         run: |

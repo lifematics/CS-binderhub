@@ -9,9 +9,12 @@ hub:
     binder:
       oauth_no_confirm: true
       oauth_redirect_uri: "http://127.0.0.1:8585/oauth_callback"
-      oauth_client_id: "binder-oauth-client-test"
+      oauth_client_id: "service-binder-oauth-client-test"
   config:
     JupyterHub:
       authenticator_class: "dummy"
+      load_roles:
+        - name: user
+          scopes: [ 'self', 'access:services' ]
     DummyAuthenticator:
       password: "dummy"
