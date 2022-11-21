@@ -11,7 +11,7 @@ docker
 escapism
 jinja2
 jsonschema
-jupyterhub
+jupyterhub @ git+https://github.com/RCOSDP/CS-jupyterhub.git@master
 kubernetes
 prometheus_client
 python-json-logger
