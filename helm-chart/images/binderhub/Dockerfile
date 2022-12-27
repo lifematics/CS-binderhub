@@ -56,6 +56,12 @@ RUN apt-get update \
 COPY --from=build-stage /tmp/binderhub/dist/*.whl pre-built-wheels/
 COPY helm-chart/images/binderhub/requirements.txt .
 
+RUN pip install --no-cache-dir cliapp
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash 
+RUN apt install -y --no-install-recommends nodejs && \
+    rm -rf /var/lib/apt/lists/*
+RUN npm install --global yarn
+
 # Install pre-built wheels and the generated requirements.txt for the image.
 RUN pip install --no-cache-dir \
         pre-built-wheels/*.whl \
