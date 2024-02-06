@@ -29,12 +29,12 @@ jobs:
               helm-version: v3.5.0
               test: helm
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           # chartpress requires the full history
           fetch-depth: 0
 
-      - uses: jupyterhub/action-k3s-helm@v1
+      - uses: jupyterhub/action-k3s-helm@v4
         with:
           k3s-version: ${{ matrix.k3s-version }}
           helm-version: ${{ matrix.helm-version }}
@@ -51,7 +51,7 @@ jobs:
               libcurl4-openssl-dev \
               libssl-dev
 
-      - uses: actions/setup-node@v2-beta
+      - uses: actions/setup-node@v4
         with:
           node-version: '14'
 
@@ -60,7 +60,7 @@ jobs:
             npm install
             npm run webpack
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.8'
 
