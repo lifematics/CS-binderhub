@@ -1,17 +1,17 @@
 # We use a build stage to package binderhub and pycurl into a wheel which we
 # then install by itself in the final image which is relatively slimmed.
-ARG DIST=buster
+ARG DIST=bullseye
 
 
 # The build stage
 # ---------------
-FROM python:3.8-$DIST as build-stage
+FROM python:3.9-$DIST AS build-stage
 # ARG DIST is defined again to be made available in this build stage's scope.
 # ref: https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
 ARG DIST
 
 # Install node as required to package binderhub to a wheel
-RUN echo "deb http://deb.nodesource.com/node_14.x $DIST main" > /etc/apt/sources.list.d/nodesource.list \
+RUN echo "deb http://deb.nodesource.com/node_18.x $DIST main" > /etc/apt/sources.list.d/nodesource.list \
  && curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -
 RUN apt-get update \
  && apt-get install --yes \
@@ -33,13 +33,13 @@ RUN mkdir -p /etc/pki/tls/certs/ && ln -s /etc/ssl/certs/ca-certificates.crt /et
 
 # The final stage
 # ---------------
-FROM python:3.8-$DIST
+FROM python:3.9-$DIST
 WORKDIR /
 
 ARG DIST
 
 # Install node as required to package binderhub to a wheel
-RUN echo "deb http://deb.nodesource.com/node_14.x $DIST main" > /etc/apt/sources.list.d/nodesource.list \
+RUN echo "deb http://deb.nodesource.com/node_18.x $DIST main" > /etc/apt/sources.list.d/nodesource.list \
  && curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -
 RUN apt-get update \
  && apt-get install --yes \
@@ -62,7 +62,7 @@ COPY --from=build-stage /tmp/binderhub/dist/*.whl pre-built-wheels/
 COPY helm-chart/images/binderhub/requirements.txt .
 
 RUN pip install --no-cache-dir cliapp
-RUN curl -sL https://deb.nodesource.com/setup_14.x | bash 
+RUN curl -sL https://deb.nodesource.com/setup_18.x | bash 
 RUN apt install -y --no-install-recommends nodejs && \
     rm -rf /var/lib/apt/lists/*
 RUN npm install --global yarn
