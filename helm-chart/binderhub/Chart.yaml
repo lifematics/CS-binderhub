@@ -12,7 +12,7 @@ dependencies:
   #            and run "./dependencies freeze --upgrade".
   #
   - name: jupyterhub
-    version: "4.1.0-0.dev.git.6950.h5e4c7698"
+    version: "4.1.0-20251111.2"
     repository: "https://rcosdp.github.io/CS-jhub-helm-chart/"
 description: |-
   BinderHub is like a JupyterHub that automatically builds environments for the
