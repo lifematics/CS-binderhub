@@ -150,7 +150,10 @@ class Launcher(LoggingConfigurable):
 
     async def get_named_server_count(self, username):
         """Return the number of named servers for a given JupyterHub user."""
-        user_data = await self.get_user_data(username)
+        try:
+            user_data = await self.get_user_data(username)
+        except RuntimeError:
+            return 0
         servers = user_data.get("servers", {})
         if not isinstance(servers, dict):
             return 0
