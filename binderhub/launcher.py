@@ -148,6 +148,14 @@ class Launcher(LoggingConfigurable):
         body = json.loads(resp.body.decode("utf-8"))
         return body
 
+    async def get_named_server_count(self, username):
+        """Return the number of named servers for a given JupyterHub user."""
+        user_data = await self.get_user_data(username)
+        servers = user_data.get("servers", {})
+        if not isinstance(servers, dict):
+            return 0
+        return sum(1 for server_name in servers if server_name != "")
+
     def unique_name_from_repo(self, repo_url):
         """Generate a unique name for a git repo url
 
