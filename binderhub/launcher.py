@@ -124,7 +124,7 @@ class Launcher(LoggingConfigurable):
                 # because they are likely intermittent issues in the cluster
                 # e.g. 502,504 due to ingress issues or Hub relocating,
                 # 599 due to connection issues such as Hub restarting
-                if e.code >= 500 or e.code in (403, 404):
+                if e.code >= 500:
                     self.log.error(
                         "Error accessing Hub API (using %s): %s", request_url, e
                     )
